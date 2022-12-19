@@ -22,6 +22,8 @@ namespace ASHMONEY_API.Controllers
         }
 
 
+
+
         [HttpGet]
         [Route("GetAllAccounts")]
 
@@ -30,71 +32,7 @@ namespace ASHMONEY_API.Controllers
             return Ok(await _DbContext.Accounts.ToListAsync());
         }
 
-        [HttpPost]
-        [Route("Register")]
-        public async Task<IActionResult> Register(Account userObj)
-        {
-            var IsEmailExist = await _DbContext.Accounts.Where(x => x.Email == userObj.Email).AnyAsync();
-
-            var IsPhoneNumberExist = await _DbContext.Accounts.Where(x => x.PhoneNumber == userObj.PhoneNumber).AnyAsync();
-
-            if (IsEmailExist)
-            {
-                return NotFound(new { Message = "Email Already Exisst" });
-            }
-            if (IsPhoneNumberExist)
-            {
-                return NotFound(new { Message = "Phone Number Already Exisst" });
-            }
-            else
-            {
-                if (userObj == null)
-                {
-                    return BadRequest(new { Message = "Something went wrong" });
-                }
-                else
-                {
-
-                    //foreach (var userReg in userObj.AccountNumber)
-                    //{
-                    Random rd = new Random();
-                    int rand_num = rd.Next(1000000, 2000000);
-
-                    var user = new Account()
-                    {
-                        Address = userObj.Address,
-                        Email = userObj.Email,
-                        PhoneNumber = userObj.PhoneNumber,
-                        Password = userObj.Password,
-                        DateOfBirth = userObj.DateOfBirth,
-                        Gender = userObj.Gender,
-                        Country = userObj.Country,
-                        FirstName = userObj.FirstName,
-                        LastName = userObj.LastName,
-                        State = userObj.State,
-                        
-                        AccountNumber = "001" + rand_num,
-                        AccountType = userObj.AccountType,
-                        Role = userObj.Role,
-                        Token = userObj.Token,
-                        TransactionPin = userObj.TransactionPin,
-                        BankName = "ASHMONEY",
-                        AccountBalance = "5000"
-
-                    };
-
-                    await _DbContext.Accounts.AddAsync(user);
-
-                    await _DbContext.SaveChangesAsync();
-                    return Ok(new
-                    {
-                        Message = "Successfully Registered",
-                        UserData = userObj
-                    });
-                }
-            }
-
-        }
+       
 
         [HttpGet]
         [Route("GetAccountById")]
@@ -109,6 +47,26 @@ namespace ASHMONEY_API.Controllers
             {
                 return Ok(user);
             }
+        }
+
+        [HttpGet("GetLastLoggedInTime")]
+        public DateTime GetLastLoggedInTime(int Id)
+        {
+            var user = _DbContext.Accounts.FirstOrDefault(u => u.Id == Id);
+            return user?.LastLoggedIn ?? throw new Exception("User not found");
+        }
+
+        [HttpGet("GetLoggedInTime")]
+        public void RecordLoginTime(int userId)
+        {
+            var user = _DbContext.Accounts.FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            user.LastLoggedIn = DateTime.UtcNow;
+            _DbContext.SaveChanges();
         }
 
 
@@ -169,7 +127,7 @@ namespace ASHMONEY_API.Controllers
             }
             if (IsPhoneNumberExist)
             {
-                return NotFound(new { Message = "Phone Number Already Exisst" });
+                return NotFound(new { Message = "Phone Number Already Exist" });
             }
             else
             {
@@ -183,13 +141,17 @@ namespace ASHMONEY_API.Controllers
 
                     Random rd = new Random();
                     int rand_num = rd.Next(1000000, 2000000);
+                    int a = 00111;
+                    int b = rand_num;
 
-                    account.AccountNumber = "001" + rand_num;
+                    int newAcctNumber = int.Parse(a.ToString() + b.ToString());
+
+                    account.AccountNumber = newAcctNumber;
                     account.BankName = "ASHMONEY";
                     account.Token = "";
-                    account.Role = Account.UserRole.User;
-                    account.AccountType = Account.AcctType.Savings;
-                    account.AccountBalance = "5000";
+                    account.Role = "User";
+                    account.AccountType = "Savings";
+                    account.AccountBalance = 5000;
                     await _DbContext.Accounts.AddAsync(account);
                     await _DbContext.SaveChangesAsync();
                     return Ok(new

@@ -4,14 +4,16 @@ using ASHMONEY_API.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ASHMONEY_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221216112917_CHANGED ACCOUNT NUMBER TO INT")]
+    partial class CHANGEDACCOUNTNUMBERTOINT
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,8 +34,8 @@ namespace ASHMONEY_API.Migrations
                     b.Property<int>("AccountNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("AccountType")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("AccountType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
@@ -53,7 +55,7 @@ namespace ASHMONEY_API.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gender")
@@ -61,6 +63,9 @@ namespace ASHMONEY_API.Migrations
 
                     b.Property<DateTime>("LastLoggedIn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
@@ -71,8 +76,8 @@ namespace ASHMONEY_API.Migrations
                     b.Property<int>("PhoneNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("Role")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<string>("State")
                         .HasColumnType("nvarchar(max)");
@@ -101,10 +106,7 @@ namespace ASHMONEY_API.Migrations
                     b.Property<string>("Beneficiary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BeneficiaryAccount")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BeneficiaryBankName")
+                    b.Property<string>("Currency")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Narration")
@@ -114,9 +116,6 @@ namespace ASHMONEY_API.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Sender")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderAccount")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")

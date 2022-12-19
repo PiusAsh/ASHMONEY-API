@@ -13,11 +13,14 @@ namespace ASHMONEY_API.Models
         public DateTime TransactionDate { get; set; }
         public string ReferenceNumber { get; set; }
         public string Beneficiary { get; set; }
+        public string BeneficiaryAccount { get; set; }
         public string Sender { get; set; }
+        public string SenderAccount { get; set; }
+        public string BeneficiaryBankName { get; set; }
         public string Status { get; set; }
         public string Narration { get; set; }
         public int Amount { get; set; }
-        public string Currency { get; set; }
+        
     }
     
 }
