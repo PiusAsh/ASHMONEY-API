@@ -15,10 +15,16 @@ namespace ASHMONEY_API.Context
         }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<BankTransferResponse> Transactions { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Account>().ToTable("Accounts");
-            modelBuilder.Entity<BankTransferResponse>().ToTable("Transactions");
-        }
+        public DbSet<LoanRes> LoanRequest { get; set; }
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<Account>().ToTable("Accounts");
+        //    modelBuilder.Entity<BankTransferResponse>().ToTable("Transactions");
+        //    modelBuilder.Entity<LoanRes>().ToTable("LoanRequest").Property(p => p.Principal)
+        //.HasColumnType("decimal(18, 2)");
+        //    modelBuilder.Entity<LoanRes>()
+        //.Property(p => p.InterestRate)
+        //.HasColumnType("decimal(18, 2)");
+        //}
     }
 }

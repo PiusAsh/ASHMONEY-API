@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASHMONEY_API.Models
 {
-    public class LoanResponse
+    public class LoanRes
     {
         [Key]
         public int LoanId { get; set; }
@@ -19,5 +19,6 @@ namespace ASHMONEY_API.Models
         public DateTime RepaymentDate { get; set; }
         public string BorrowerName { get; set; }
         public int BorrowerAccount { get; set; }
+        public string Purpose { get; set; }
     }
 }

@@ -106,7 +106,6 @@ namespace ASHMONEY_API.Controllers
             var user = await _DbContext.Accounts.FirstOrDefaultAsync(x => x.PhoneNumber == userObj.PhoneNumber && x.Password == userObj.Password);
             if (user == null)
                 return NotFound(new { Message = "User Not Found!" });
-
             return Ok(new
             {
                 Message = "Login success!",
@@ -152,6 +151,7 @@ namespace ASHMONEY_API.Controllers
                     account.Role = "User";
                     account.AccountType = "Savings";
                     account.AccountBalance = 5000;
+                    account.DateCreated = DateTime.UtcNow;
                     await _DbContext.Accounts.AddAsync(account);
                     await _DbContext.SaveChangesAsync();
                     return Ok(new

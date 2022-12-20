@@ -39,38 +39,43 @@ namespace ASHMONEY_API.Controllers
             [HttpPost("Transfer")]
             public BankTransferResponse Transfer(BankTransferRequest request)
             {
-                // Retrieve the sender and recipient accounts from the database
-                var senderAccount = GetAccount(request.SenderAccount);
-                var recipientAccount = GetAccount(request.BeneficiaryAccount);
-            // Calculate the new balances for the sender and recipient accounts
-            var senderNewBalance = senderAccount.AccountBalance - request.Amount;
-                var recipientNewBalance = recipientAccount.AccountBalance + request.Amount;
-
-            if (senderAccount == recipientAccount)
-            {
-                return null;
-            }
-            
-                // Update the balances in the database
-                UpdateAccountBalance(request.SenderAccount, senderNewBalance);
-                UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance);
             //Generating Reference number
             Random rd = new Random();
             int rand_num = rd.Next(100000000, 200000000);
-            // Create and return a response object
-            var response = new BankTransferResponse
-                {
-                    BeneficiaryAccount = request.BeneficiaryAccount.ToString(),
-                    SenderAccount = request.SenderAccount.ToString(),
-                    //Sender = ,
-                    Amount = request.Amount,
-                    Status = "Success",
-                   TransactionDate = DateTime.Now,
-                   ReferenceNumber =  "023" + rand_num,
-                  
-                };
+            // Create a response object
+            var response = new BankTransferResponse();
 
-                return  response;
+            // Get the sender account
+            var senderAccount = GetAccount(request.SenderAccount);
+            // Set the sender name and account number in the response object
+            response.Sender = senderAccount.FullName;
+            response.SenderAccount = senderAccount.AccountNumber.ToString();
+            // Get the beneficiary account
+            var beneficiaryAccount = GetAccount(request.BeneficiaryAccount);
+            // Set the beneficiary name and account number in the response object
+            response.Beneficiary = beneficiaryAccount.FullName;
+            response.BeneficiaryAccount = beneficiaryAccount.AccountNumber.ToString();
+            //Set the remaining response object
+            response.TransactionDate = DateTime.Now;
+            response.Amount = request.Amount;
+            response.Status = "Success";
+            response.ReferenceNumber = "023" + rand_num;
+            response.BeneficiaryBankName = "ASHMONEY";
+            response.Narration = response.Narration;
+
+
+            // Calculate the new balances for the sender and recipient accounts
+            var senderNewBalance = senderAccount.AccountBalance - request.Amount;
+            var recipientNewBalance = beneficiaryAccount.AccountBalance + request.Amount;
+
+            if (senderAccount == beneficiaryAccount)
+            {
+                return null;
+            }
+            // Update the balances in the database
+            UpdateAccountBalance(request.SenderAccount, senderNewBalance);
+            UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance);
+            return  response;
             }
 
         // Method for retrieving an account from the database
@@ -80,22 +85,11 @@ namespace ASHMONEY_API.Controllers
             var account = _DbContext.Accounts.Where(a => a.AccountNumber == accountNumber).SingleOrDefault();
                 return account;
            }
-        // Method for retrieving an senderName from the database
-        private Account GetsenderName(string senderName)
-        {
-            // Query the database for the account with the specified account number
-            var accountName = _DbContext.Accounts.Where(a => a.FullName == senderName).SingleOrDefault();
-            return accountName;
-        }
-
-
 
         // Method for updating an account's balance in the database
         private void UpdateAccountBalance(int accountNumber, int newBalance)
-        {
-            
-            
-                // Query the database for the account with the specified account number
+        {  
+         // Query the database for the account with the specified account number
                 var account = _DbContext.Accounts
                     .Where(a => a.AccountNumber == accountNumber)
                     .SingleOrDefault();
@@ -103,53 +97,16 @@ namespace ASHMONEY_API.Controllers
             account.AccountBalance = newBalance;
             if(account != null)
             {
+                // Add the record to the database
+                _DbContext.Accounts.Add(account);
+                _DbContext.Transactions.Add(account);
                 // Update the changes in the database
                 _DbContext.Accounts.Update(account);
                 // Save the changes to the database
                 _DbContext.SaveChanges();
 
-            }
-
-            
+            }  
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult > GetTransactionsByUser(string userId)
-        //{
-        //    // Query the database for all transactions made by the specified user
-        //    var transactions = _DbContext.Transactions
-        //      .Where(t => t.Sender == userId)
-        //      .ToListAsync();
-
-        //    return transactions;
-        //}
-
-
-        //[HttpGet]
-        //[Route("GetAllUserOrders")]
-
-        //public async Task<IActionResult> GetAllUserOrders(int userId)
-        //{
-        //    var user = await _DbContext.Transactions.FindAsync(userId);
-        //    var AccountTFR = await _DbContext.Transactions.Where(x => x.TransactionId == user).Select(x => new BankTransferResponse
-        //    {
-
-        //        Status = x.Status
-        //    }).ToListAsync();
-
-        //    if (AccountTFR == null)
-        //    {
-        //        return NotFound(new { Message = "No Transaction found" });
-
-        //    }
-
-        //    return Ok(new
-        //    {
-        //        AccountTFR,
-
-        //    });
-        //}
-
 
     }
 
