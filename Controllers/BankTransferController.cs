@@ -99,7 +99,7 @@ namespace ASHMONEY_API.Controllers
             {
                 // Add the record to the database
                 _DbContext.Accounts.Add(account);
-                _DbContext.Transactions.Add(account);
+                //_DbContext.Transactions.Add(account);
                 // Update the changes in the database
                 _DbContext.Accounts.Update(account);
                 // Save the changes to the database
