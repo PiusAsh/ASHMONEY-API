@@ -150,6 +150,7 @@ namespace ASHMONEY_API.Controllers
                     account.Token = "";
                     account.Role = "User";
                     account.AccountType = "Savings";
+                    account.TransactionPin = 1234;
                     account.AccountBalance = 5000;
                     account.DateCreated = DateTime.UtcNow;
                     await _DbContext.Accounts.AddAsync(account);
@@ -163,6 +164,32 @@ namespace ASHMONEY_API.Controllers
             }
         }
 
+
+        [HttpPut("UpdateAccount")]
+        public async Task<IActionResult> UpdateAccount(int Id, Account account)
+        {
+            var user = await _DbContext.Accounts.FindAsync(Id);
+
+            if (user == null)
+            {
+                return NotFound(new { Message = "No record Found" });
+            }
+            else
+            {
+                user.Country = account.Country;
+                user.Address = account.Address;
+                user.Email = account.Email;
+                user.PhoneNumber = account.PhoneNumber;
+                user.TransactionPin = account.TransactionPin;
+                user.State = account.State;
+                user.AccountType = account.AccountType;
+                user.DateOfBirth = account.DateOfBirth;
+                user.Password = account.Password;
+                
+
+                return Ok(user);
+            }
+        }
             //[HttpDelete]
             //[Route("DeleteUser")]
             //public async Task<IActionResult> DeleteUser(int Id)
@@ -180,6 +207,6 @@ namespace ASHMONEY_API.Controllers
             //    }
 
 
-            //}
-        }
+        //}
+    }
     }

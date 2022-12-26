@@ -19,5 +19,8 @@ namespace ASHMONEY_API.Models
         public DateTime RepaymentDate { get; set; }
         public string BorrowerName { get; set; }
         public int BorrowerAccount { get; set; }
+        public string Purpose { get; set; }
+        public decimal AmountPaid { get; set; }
+        public string Status { get; set; } = "Not Paid";
     }
 }

@@ -125,12 +125,15 @@ namespace ASHMONEY_API.Migrations
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("TransactionId");
 
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("ASHMONEY_API.Models.LoanRes", b =>
+            modelBuilder.Entity("ASHMONEY_API.Models.LoanResponse", b =>
                 {
                     b.Property<int>("LoanId")
                         .ValueGeneratedOnAdd()
@@ -139,6 +142,9 @@ namespace ASHMONEY_API.Migrations
 
                     b.Property<int>("Amount")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("BorrowerAccount")
                         .HasColumnType("int");
@@ -155,6 +161,9 @@ namespace ASHMONEY_API.Migrations
                     b.Property<decimal>("Principal")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("RepaymentDate")
                         .HasColumnType("datetime2");
 
@@ -164,9 +173,12 @@ namespace ASHMONEY_API.Migrations
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("LoanId");
 
-                    b.ToTable("LoanRequest");
+                    b.ToTable("Loans");
                 });
 #pragma warning restore 612, 618
         }

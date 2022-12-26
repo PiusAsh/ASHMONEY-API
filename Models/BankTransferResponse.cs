@@ -20,6 +20,7 @@ namespace ASHMONEY_API.Models
         public string Status { get; set; }
         public string Narration { get; set; }
         public int Amount { get; set; }
+        public string Type  { get; set; }
     }
     
 }

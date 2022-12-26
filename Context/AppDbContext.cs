@@ -15,7 +15,7 @@ namespace ASHMONEY_API.Context
         }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<BankTransferResponse> Transactions { get; set; }
-        public DbSet<LoanRes> LoanRequest { get; set; }
+        public DbSet<LoanResponse> Loans { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    modelBuilder.Entity<Account>().ToTable("Accounts");

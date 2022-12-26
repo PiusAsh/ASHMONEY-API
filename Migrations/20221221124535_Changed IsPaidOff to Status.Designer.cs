@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ASHMONEY_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221218084642_Added fullName column")]
-    partial class AddedfullNamecolumn
+    [Migration("20221221124535_Changed IsPaidOff to Status")]
+    partial class ChangedIsPaidOfftoStatus
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,9 +127,60 @@ namespace ASHMONEY_API.Migrations
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("TransactionId");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("ASHMONEY_API.Models.LoanResponse", b =>
+                {
+                    b.Property<int>("LoanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BorrowerAccount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BorrowerName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("InterestRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Principal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RepaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RepaymentPeriod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LoanId");
+
+                    b.ToTable("Loans");
                 });
 #pragma warning restore 612, 618
         }

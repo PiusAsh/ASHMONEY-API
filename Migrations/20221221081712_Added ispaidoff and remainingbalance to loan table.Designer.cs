@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ASHMONEY_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221220082801_Added new loan table v7")]
-    partial class Addednewloantablev7
+    [Migration("20221221081712_Added ispaidoff and remainingbalance to loan table")]
+    partial class Addedispaidoffandremainingbalancetoloantable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -127,12 +127,15 @@ namespace ASHMONEY_API.Migrations
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("TransactionId");
 
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("ASHMONEY_API.Models.LoanRes", b =>
+            modelBuilder.Entity("ASHMONEY_API.Models.LoanResponse", b =>
                 {
                     b.Property<int>("LoanId")
                         .ValueGeneratedOnAdd()
@@ -154,7 +157,16 @@ namespace ASHMONEY_API.Migrations
                     b.Property<decimal>("InterestRate")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IsPaidOff")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("Principal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("RemainingBalance")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("RepaymentDate")
@@ -168,7 +180,7 @@ namespace ASHMONEY_API.Migrations
 
                     b.HasKey("LoanId");
 
-                    b.ToTable("LoanRequest");
+                    b.ToTable("Loans");
                 });
 #pragma warning restore 612, 618
         }
