@@ -37,7 +37,7 @@ namespace ASHMONEY_API.Models
         {
             // Query the database for all loans made by the borrower
             var loans = await _DbContext.Loans
-                .Where(l => l.ClientId == clientId)
+                .Where(l => l.ClientId == clientId).OrderByDescending(x => x.LoanId)
                 .ToListAsync();
 
             return loans;
@@ -185,20 +185,24 @@ namespace ASHMONEY_API.Models
                 return BadRequest("This loan has already been paid off.");
             }
 
-            // Check if the payment amount is less than the remaining balance on the loan
-            //if (payment.Amount < loan.AmountPaid)
-            //{
-            //    return BadRequest("The payment amount must be at least the remaining balance on the loan.");
-            //}
+            //Check if the payment amount is less than the remaining balance on the loan
+            if (payment.Amount < loan.Principal)
+            {
+                return BadRequest("Your part payment has been received. Please pay the balance before due date");
+            }
 
             // Calculate the new remaining balance on the loan
-            if (loan.AmountPaid < 0)
-            {
-                loan.AmountPaid = loan.AmountPaid * -1;
-            }
-            decimal newBalance = loan.AmountPaid - payment.Amount;
+            //if (loan.AmountPaid < 0)
+            //{
+            //    loan.AmountPaid = loan.AmountPaid * -1;
+            //}
+            decimal newBalance = loan.AmountPaid + payment.Amount;
 
             loan.AmountPaid = newBalance;
+            if (loan.Principal == loan.AmountPaid)
+            {
+                loan.Status = "Paid";
+            }
             _DbContext.Loans.Update(loan);
             _DbContext.SaveChanges();
 
