@@ -44,8 +44,11 @@ namespace ASHMONEY_API.Controllers
         {
             
             // Query the database for all transfers made by the user
-            var transfers =  _DbContext.Transactions.Where(t => t.SenderAccount == accountNumber || t.BeneficiaryAccount == accountNumber)
-                .ToList().OrderByDescending(x => x.TransactionId);
+            //var transfers = _DbContext.Transactions.Where(t => t.SenderAccount == accountNumber || t.BeneficiaryAccount == accountNumber)
+            //    .ToList().OrderByDescending(x => x.TransactionId);
+            var transfers = (await _DbContext.Transactions.Where(t => t.SenderAccount == accountNumber || t.BeneficiaryAccount == accountNumber).ToListAsync())
+                .OrderByDescending(x => x.TransactionId);
+
 
             return transfers;
         }
@@ -100,12 +103,14 @@ namespace ASHMONEY_API.Controllers
                 // Amount is 0
                 response.Status = "Failed";
             }
-
+                EligibleLoanAmount eligibleLoan = new EligibleLoanAmount();
             // Calculate the new balances for the sender and recipient accounts
             var senderNewBalance = senderAccount.AccountBalance - request.Amount;
+                var senderNewEligible = eligibleLoan.Calculate(senderNewBalance);
             var recipientNewBalance = beneficiaryAccount.AccountBalance + request.Amount;
+                var recipientNewEligibleLoan = eligibleLoan.Calculate(recipientNewBalance);
 
-            if (senderAccount == beneficiaryAccount)
+                if (senderAccount == beneficiaryAccount)
             {
                 return BadRequest("Both accounts cannot be the same");
             }
@@ -114,8 +119,8 @@ namespace ASHMONEY_API.Controllers
                 return BadRequest("Insufficient balance");
             }
             // Update the balances in the database
-            await UpdateAccountBalance(request.SenderAccount, senderNewBalance, response);
-            await UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance, response);
+            await UpdateAccountBalance(request.SenderAccount, senderNewBalance, senderNewEligible, response);
+            await UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance, recipientNewEligibleLoan, response);
             return response;
         }
         catch (DbUpdateException e)
@@ -139,69 +144,69 @@ namespace ASHMONEY_API.Controllers
 
 
 
-    [HttpPost("Transfers")]
-        public async Task<ActionResult<BankTransferResponse>> Transfers(BankTransferRequest request)
-            {
-            //Generating Reference number
-            Random rd = new Random();
-            int rand_num = rd.Next(100000000, 200000000);
-            // Create a response object
-            var response = new BankTransferResponse();
+    //[HttpPost("Transfers")]
+    //    public async Task<ActionResult<BankTransferResponse>> Transfers(BankTransferRequest request)
+    //        {
+    //        //Generating Reference number
+    //        Random rd = new Random();
+    //        int rand_num = rd.Next(100000000, 200000000);
+    //        // Create a response object
+    //        var response = new BankTransferResponse();
 
-            // Get the sender account
-            var senderAccount = GetAccount(request.SenderAccount);
-            // Set the sender name and account number in the response object
-            response.Sender = senderAccount.FullName;
-            response.SenderAccount = senderAccount.AccountNumber.ToString();
-            // Get the beneficiary account
-            var beneficiaryAccount = GetAccount(request.BeneficiaryAccount);
-            if (beneficiaryAccount == null)
-            {
-                return BadRequest("Beneficiary account not found");
-            }
-            // Set the beneficiary name and account number in the response object
-            response.Beneficiary = beneficiaryAccount.FullName;
+    //        // Get the sender account
+    //        var senderAccount = GetAccount(request.SenderAccount);
+    //        // Set the sender name and account number in the response object
+    //        response.Sender = senderAccount.FullName;
+    //        response.SenderAccount = senderAccount.AccountNumber.ToString();
+    //        // Get the beneficiary account
+    //        var beneficiaryAccount = GetAccount(request.BeneficiaryAccount);
+    //        if (beneficiaryAccount == null)
+    //        {
+    //            return BadRequest("Beneficiary account not found");
+    //        }
+    //        // Set the beneficiary name and account number in the response object
+    //        response.Beneficiary = beneficiaryAccount.FullName;
             
-            response.BeneficiaryAccount = beneficiaryAccount.AccountNumber.ToString();
-            //Set the remaining response object
-            response.TransactionDate = DateTime.Now;
-            response.Amount = request.Amount;
-            response.Status = "Success";
-            response.ReferenceNumber = "001" + rand_num;
-            response.BeneficiaryBankName = "ASHMONEY";
-            response.Narration = response.Narration;
-            // Set the transaction type
-            if (request.Amount > 0)
-            {
-                response.Type = "Credit";
-            }
-            else if (request.Amount < 0)
-            {
-                response.Type = "Debit";
-            }
-            else
-            {
-                // Amount is 0
-                response.Status = "Failed";
-            }
+    //        response.BeneficiaryAccount = beneficiaryAccount.AccountNumber.ToString();
+    //        //Set the remaining response object
+    //        response.TransactionDate = DateTime.Now;
+    //        response.Amount = request.Amount;
+    //        response.Status = "Success";
+    //        response.ReferenceNumber = "001" + rand_num;
+    //        response.BeneficiaryBankName = "ASHMONEY";
+    //        response.Narration = response.Narration;
+    //        // Set the transaction type
+    //        if (request.Amount > 0)
+    //        {
+    //            response.Type = "Credit";
+    //        }
+    //        else if (request.Amount < 0)
+    //        {
+    //            response.Type = "Debit";
+    //        }
+    //        else
+    //        {
+    //            // Amount is 0
+    //            response.Status = "Failed";
+    //        }
 
-            // Calculate the new balances for the sender and recipient accounts
-            var senderNewBalance = senderAccount.AccountBalance - request.Amount;
-            var recipientNewBalance = beneficiaryAccount.AccountBalance + request.Amount;
+    //        // Calculate the new balances for the sender and recipient accounts
+    //        var senderNewBalance = senderAccount.AccountBalance - request.Amount;
+    //        var recipientNewBalance = beneficiaryAccount.AccountBalance + request.Amount;
 
-            if (senderAccount == beneficiaryAccount)
-            {
-                return BadRequest("Both accounts cannot be the same");
-            }
-            if (senderAccount.AccountBalance < request.Amount)
-            {
-                return BadRequest("Insufficient balance");
-            }
-            // Update the balances in the database
-            await UpdateAccountBalance(request.SenderAccount, senderNewBalance, response);
-            await UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance, response);
-            return  response;
-            }
+    //        if (senderAccount == beneficiaryAccount)
+    //        {
+    //            return BadRequest("Both accounts cannot be the same");
+    //        }
+    //        if (senderAccount.AccountBalance < request.Amount)
+    //        {
+    //            return BadRequest("Insufficient balance");
+    //        }
+    //        // Update the balances in the database
+    //        await UpdateAccountBalance(request.SenderAccount, senderNewBalance, response);
+    //        await UpdateAccountBalance(request.BeneficiaryAccount, recipientNewBalance, response);
+    //        return  response;
+    //        }
 
         // Method for retrieving an account from the database
         private Account GetAccount(int accountNumber)
@@ -212,7 +217,7 @@ namespace ASHMONEY_API.Controllers
            }
 
         // Method for updating the account's balance in the database
-        private async Task<int> UpdateAccountBalance(int accountNumber, int newBalance, BankTransferResponse response)
+        private async Task<int> UpdateAccountBalance(int accountNumber, int newBalance, int newEligibleAmount, BankTransferResponse response)
         {
             // Query the database for the account with the specified account number
             int oldBalance = 0;
@@ -227,6 +232,7 @@ namespace ASHMONEY_API.Controllers
             {
                 oldBalance = account.AccountBalance;
                 account.AccountBalance = newBalance;
+                account.EligibleLoanAmt = newEligibleAmount;
                 // Update the changes in the database
                 _DbContext.Accounts.Update(account);
                 // Save the changes to the database

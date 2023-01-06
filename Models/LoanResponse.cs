@@ -13,7 +13,7 @@ namespace ASHMONEY_API.Models
         public int Amount { get; set; }
         public int ClientId { get; set; }
         public DateTime RequestDate { get; set; }
-        public decimal InterestRate { get; set; } = 5.0m; // Fixed interest rate of 5%
+        public decimal InterestRate { get; set; } = 3.0m; // Fixed interest rate of 3%
         public int RepaymentPeriod { get; set; }
         public decimal Principal { get; set; }
         public DateTime RepaymentDate { get; set; }

@@ -69,12 +69,19 @@ namespace ASHMONEY_API.Models
             {
                 return BadRequest(ModelState);
             }
+            EligibleLoanAmount eligibleLoanAmount = new EligibleLoanAmount();
+            clientAccount.EligibleLoanAmt = eligibleLoanAmount.Calculate(clientAccount.AccountBalance);
 
-            // Check if the loan amount is within the allowable range
-            if (loanRequest.Amount < MIN_LOAN_AMOUNT || loanRequest.Amount > MAX_LOAN_AMOUNT)
+
+            if (loanRequest.Amount > clientAccount.EligibleLoanAmt)
             {
-                return BadRequest("The loan amount must be between ₦" + MIN_LOAN_AMOUNT + " and ₦" + MAX_LOAN_AMOUNT);
+                return BadRequest(new {Message = "The loan amount must not exceed " + "₦" + clientAccount.EligibleLoanAmt + " for now"});
             }
+            
+            //if (loanRequest.Amount < MIN_LOAN_AMOUNT || loanRequest.Amount > MAX_LOAN_AMOUNT)
+            //{
+            //    return BadRequest("The loan amount must be between ₦" + MIN_LOAN_AMOUNT + " and ₦" + MAX_LOAN_AMOUNT);
+            //}
 
             // Check if the repayment period is within the allowable range
             if (loanRequest.RepaymentPeriod < MIN_REPAYMENT_PERIOD || loanRequest.RepaymentPeriod > MAX_REPAYMENT_PERIOD)
@@ -185,11 +192,11 @@ namespace ASHMONEY_API.Models
                 return BadRequest("This loan has already been paid off.");
             }
 
-            //Check if the payment amount is less than the remaining balance on the loan
-            if (payment.Amount < loan.Principal)
-            {
-                return BadRequest("Your part payment has been received. Please pay the balance before due date");
-            }
+            ////Check if the payment amount is less than the remaining balance on the loan
+            //if (payment.Amount < loan.Principal)
+            //{
+            //    return Ok("Your part payment has been received. Please pay the balance before due date");
+            //}
 
             // Calculate the new remaining balance on the loan
             //if (loan.AmountPaid < 0)
@@ -203,8 +210,7 @@ namespace ASHMONEY_API.Models
             {
                 loan.Status = "Paid";
             }
-            _DbContext.Loans.Update(loan);
-            _DbContext.SaveChanges();
+
 
             // Retrieve the borrower's account information from the database
             var borrowerAccount = _DbContext.Accounts
@@ -214,15 +220,18 @@ namespace ASHMONEY_API.Models
             {
                 return NotFound();
             }
+
+            if (borrowerAccount.AccountBalance < payment.Amount)
+            {
+                return BadRequest("Insufficient Balance");
+            }
             // Calculate the new balance on the borrower's account
             if (borrowerAccount.AccountBalance < 0) {
                 borrowerAccount.AccountBalance = borrowerAccount.AccountBalance * -1;
             }
+            _DbContext.Loans.Update(loan);
+            _DbContext.SaveChanges();
 
-            if (borrowerAccount.AccountBalance < payment.Amount)
-            {
-                return BadRequest("Insufficient Balance. Please fund your account and try again");
-            }
             decimal newAccountBalance = borrowerAccount.AccountBalance - payment.Amount;
             var balance = Convert.ToDecimal(newBalance);
             // Update the borrower's account balance in the database

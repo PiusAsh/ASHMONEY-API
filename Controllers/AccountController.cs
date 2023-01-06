@@ -106,12 +106,18 @@ namespace ASHMONEY_API.Controllers
             var user = await _DbContext.Accounts.FirstOrDefaultAsync(x => x.PhoneNumber == userObj.PhoneNumber && x.Password == userObj.Password);
             if (user == null)
                 return NotFound(new { Message = "User Not Found!" });
+            user.LastLoggedIn = DateTime.Now;
+           await _DbContext.SaveChangesAsync();
+
             return Ok(new
             {
                 Message = "Login success!",
                 user
             });
         }
+
+
+
 
         [HttpPost("Signup")]
         public async Task<IActionResult> Signup([FromBody] Account account)
@@ -138,14 +144,20 @@ namespace ASHMONEY_API.Controllers
                 {
 
 
+                    //Random rd = new Random();
+                    //int rand_num = rd.Next(1000000, 2000000);
+                    //int a = 00111;
+                    //int b = rand_num;
+
+                    //int newAcctNumber = int.Parse(a.ToString() + b.ToString());
+
                     Random rd = new Random();
-                    int rand_num = rd.Next(1000000, 2000000);
-                    int a = 00111;
-                    int b = rand_num;
+                    int uniqueNumber = rd.Next(100000000, 200000000);
+                    string prefix = "002";
+                    string newAcctNumber = prefix + uniqueNumber.ToString();
 
-                    int newAcctNumber = int.Parse(a.ToString() + b.ToString());
 
-                    account.AccountNumber = newAcctNumber;
+                    account.AccountNumber = int.Parse(newAcctNumber);
                     account.BankName = "ASHMONEY";
                     account.Token = "";
                     account.Role = "User";
@@ -153,6 +165,7 @@ namespace ASHMONEY_API.Controllers
                     account.TransactionPin = 1234;
                     account.AccountBalance = 5000;
                     account.DateCreated = DateTime.UtcNow;
+                    account.EligibleLoanAmt = 15000;
                     await _DbContext.Accounts.AddAsync(account);
                     await _DbContext.SaveChangesAsync();
                     return Ok(new
@@ -185,8 +198,8 @@ namespace ASHMONEY_API.Controllers
                 user.AccountType = account.AccountType;
                 user.DateOfBirth = account.DateOfBirth;
                 user.Password = account.Password;
-                
 
+              await _DbContext.SaveChangesAsync();
                 return Ok(user);
             }
         }

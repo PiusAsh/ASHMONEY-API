@@ -29,6 +29,7 @@ namespace ASHMONEY_API.Models
         public DateTime LastLoggedIn { get; set; }
         public string Role { get; set; }
         public string Token { get; set; }
+        public int EligibleLoanAmt { get; set; }
 
     }
 }

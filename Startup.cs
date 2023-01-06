@@ -53,14 +53,16 @@ namespace ASHMONEY_API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "ASHBANK API",
+                    Title = "ASHMONEY API",
                     Version = "v1",
                     Description = "Digital Finance Solution",
                     Contact = new Microsoft.OpenApi.Models.OpenApiContact
                     {
                         Name = "Pius Ashogbon",
                         Email = "infopiusash@gmail.com",
-                        Url = new System.Uri("https://github.com/PiusAsh")
+                        Url = new System.Uri("https://www.linkedin.com/in/piusash/")
+                       
+
                     }
                 });
             });
