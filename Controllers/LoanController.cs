@@ -44,121 +44,105 @@ namespace ASHMONEY_API.Models
         }
 
 
-        [HttpPost ("LoanRequest")]
+        [HttpPost("LoanRequest")]
         public IActionResult LoanRequest(LoanRequest loanRequest)
         {
-            // Get the client account from the database
             var clientAccount = _DbContext.Accounts.SingleOrDefault(a => a.Id == loanRequest.ClientId);
 
+            if (clientAccount == null)
+            {
+                return NotFound(new { Message = "Account not found. Please check and try again" });
+            }
+
+            if (clientAccount.AccountNumber == null)
+            {
+                return NotFound(new { Message = "Account number not found. Please check and try again" });
+            }
+
+            // Assuming you set the InterestRate in the LoanResponse
+            decimal interestRate = 0.03m; // 3% annual interest rate
+
             // Create a new LoanRequest object with the provided data
-            LoanResponse response = new LoanResponse();
-
-            response.Amount = loanRequest.Amount;
-            response.BorrowerAccount = clientAccount.AccountNumber;
-            response.ClientId = loanRequest.ClientId;
-            response.BorrowerName = clientAccount.FullName;
-            response.InterestRate = response.InterestRate;
-            response.RepaymentDate = response.RepaymentDate;
-            response.RepaymentPeriod = loanRequest.RepaymentPeriod;
-            response.Principal = response.Principal;
-            response.RequestDate = DateTime.Now;
-
+            LoanResponse response = new LoanResponse
+            {
+                Amount = loanRequest.Amount,
+                BorrowerAccount = clientAccount.AccountNumber,
+                ClientId = loanRequest.ClientId,
+                BorrowerName = clientAccount.FullName,
+                InterestRate = interestRate, // Set the interest rate
+                RepaymentDate = DateTime.Now.AddMonths(loanRequest.RepaymentPeriod),
+                RepaymentPeriod = loanRequest.RepaymentPeriod,
+                Principal = 0, // To be calculated
+                RequestDate = DateTime.Now
+            };
 
             // Validate the input data
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
             EligibleLoanAmount eligibleLoanAmount = new EligibleLoanAmount();
             clientAccount.EligibleLoanAmt = eligibleLoanAmount.Calculate(clientAccount.AccountBalance);
 
-
             if (loanRequest.Amount > clientAccount.EligibleLoanAmt)
             {
-                return BadRequest(new {Message = "The loan amount must not exceed " + "₦" + clientAccount.EligibleLoanAmt + " for now"});
+                return BadRequest(new { Message = "The loan amount must not exceed ₦" + clientAccount.EligibleLoanAmt + " for now" });
             }
-            
-            //if (loanRequest.Amount < MIN_LOAN_AMOUNT || loanRequest.Amount > MAX_LOAN_AMOUNT)
-            //{
-            //    return BadRequest("The loan amount must be between ₦" + MIN_LOAN_AMOUNT + " and ₦" + MAX_LOAN_AMOUNT);
-            //}
 
-            // Check if the repayment period is within the allowable range
             if (loanRequest.RepaymentPeriod < MIN_REPAYMENT_PERIOD || loanRequest.RepaymentPeriod > MAX_REPAYMENT_PERIOD)
             {
                 return BadRequest("The repayment period must be between " + MIN_REPAYMENT_PERIOD + " months and " + MAX_REPAYMENT_PERIOD + " months.");
             }
-            // Check if the client has a good credit score
+
             if (clientAccount.AccountBalance < 5000)
             {
                 return BadRequest("Your credit score is too low to qualify for a loan.");
             }
+
             // Calculate the principal
-            decimal principal = loanRequest.Amount * (1 + response.InterestRate * loanRequest.RepaymentPeriod / 12);
+            decimal principal = loanRequest.Amount * (1 + (interestRate * loanRequest.RepaymentPeriod / 12));
             response.Principal = principal;
+
             // Calculate the new balances for the sender and recipient accounts
             var BorrowerNewBalance = clientAccount.AccountBalance + loanRequest.Amount;
 
             // Update the balances in the database
             UpdateAccountBalance(response.BorrowerAccount, BorrowerNewBalance, response);
 
-
-
-
             return Ok(new { Message = "Loan Approved and Disbursed Successfully", response });
         }
+
         // Method for updating an account's balance in the database
         private void UpdateAccountBalance(int accountNumber, int newBalance, LoanResponse res)
         {
-            // Query the database for the account with the specified account number
             var account = _DbContext.Accounts
                 .Where(a => a.AccountNumber == accountNumber)
                 .SingleOrDefault();
-            // Update the account's balance
-            account.AccountBalance = newBalance;
+
             if (account != null)
             {
+                account.AccountBalance = newBalance;
 
-
-                var data = new LoanResponse();
-                data.BorrowerName = account.FullName;
-                data.BorrowerAccount = account.AccountNumber;
-                data.ClientId = account.Id;
-                data.InterestRate = res.InterestRate;
-                //data.Principal = res.Principal;
-                data.Purpose = res.Purpose;
-                data.RepaymentPeriod = res.RepaymentPeriod;
-                //data.RepaymentDate = res.RepaymentDate;
-                data.RequestDate = DateTime.Now;
-                data.Amount = res.Amount;
-                data.LoanId = res.LoanId;
-                data.AmountPaid = +res.AmountPaid;
-                // Check if the user has paid off their loan
-                if (data.AmountPaid == res.Principal)
+                var data = new LoanResponse
                 {
-                    data.Status = "Paid";
-                }
+                    BorrowerName = account.FullName,
+                    BorrowerAccount = account.AccountNumber,
+                    ClientId = account.Id,
+                    InterestRate = res.InterestRate,
+                    Principal = res.Principal,
+                    RepaymentPeriod = res.RepaymentPeriod,
+                    RequestDate = DateTime.Now,
+                    Amount = res.Amount,
+                    LoanId = res.LoanId,
+                    AmountPaid = res.AmountPaid,
+                    Status = res.AmountPaid == res.Principal ? "Paid" : "Not Paid",
+                    RepaymentDate = DateTime.Now.AddMonths(res.RepaymentPeriod)
+                };
 
-
-
-
-                // Calculate the due date based on the repayment period
-                DateTime dueDate = DateTime.Now.AddMonths(data.RepaymentPeriod);
-
-                // Calculate the principal
-                decimal principal = data.Amount * (1 + data.InterestRate * data.RepaymentPeriod / 12);
-
-                data.Principal = principal;
-                data.RepaymentDate = dueDate;
-
-                
-                // Update the changes in the database
                 _DbContext.Loans.Update(data);
-                _DbContext.Loans.Add(data);
                 _DbContext.Accounts.Update(account);
-                // Save the changes to the database
                 _DbContext.SaveChanges();
-
             }
         }
 
@@ -168,7 +152,7 @@ namespace ASHMONEY_API.Models
 
         [HttpPost("MakeLoanPayment")]
         public IActionResult MakeLoanPayment(LoanPayment payment)
-         {
+        {
             // Validate the input data
             if (!ModelState.IsValid)
             {
@@ -192,54 +176,53 @@ namespace ASHMONEY_API.Models
                 return BadRequest("This loan has already been paid off.");
             }
 
-            ////Check if the payment amount is less than the remaining balance on the loan
-            //if (payment.Amount < loan.Principal)
-            //{
-            //    return Ok("Your part payment has been received. Please pay the balance before due date");
-            //}
-
-            // Calculate the new remaining balance on the loan
-            //if (loan.AmountPaid < 0)
-            //{
-            //    loan.AmountPaid = loan.AmountPaid * -1;
-            //}
-            decimal newBalance = loan.AmountPaid + payment.Amount;
-
-            loan.AmountPaid = newBalance;
-            if (loan.Principal == loan.AmountPaid)
-            {
-                loan.Status = "Paid";
-            }
-
-
             // Retrieve the borrower's account information from the database
             var borrowerAccount = _DbContext.Accounts
                 .Where(a => a.AccountNumber == loan.BorrowerAccount)
                 .FirstOrDefault();
+
             if (borrowerAccount == null)
             {
-                return NotFound();
+                return NotFound("Borrower's account not found.");
             }
 
-            if (borrowerAccount.AccountBalance < payment.Amount)
+            // Check if the payment amount is less than the remaining balance on the loan
+            decimal remainingLoanAmount = loan.Principal - loan.AmountPaid;
+
+            if (payment.Amount < remainingLoanAmount)
             {
-                return BadRequest("Insufficient Balance");
-            }
-            // Calculate the new balance on the borrower's account
-            if (borrowerAccount.AccountBalance < 0) {
-                borrowerAccount.AccountBalance = borrowerAccount.AccountBalance * -1;
-            }
-            _DbContext.Loans.Update(loan);
-            _DbContext.SaveChanges();
+                loan.AmountPaid += payment.Amount;
+                borrowerAccount.AccountBalance -= (int)payment.Amount;
+                loan.Status = "Not Paid"; // Ensure status reflects the unpaid loan
+                _DbContext.Loans.Update(loan);
+                _DbContext.Accounts.Update(borrowerAccount);
+                _DbContext.SaveChanges();
 
-            decimal newAccountBalance = borrowerAccount.AccountBalance - payment.Amount;
-            var balance = Convert.ToDecimal(newBalance);
-            // Update the borrower's account balance in the database
-            borrowerAccount.AccountBalance = (int)newAccountBalance;
-            _DbContext.Accounts.Update(borrowerAccount);
-            _DbContext.SaveChanges();           
-            // Return an OK response with a success message
-            return Ok(new { Message = "Loan payment successful.", loan });
+                return Ok(new { Message = "Your part payment has been received. Please pay the remaining balance before the due date.", loan });
+            }
+            else
+            {
+                // Payment exceeds or matches the remaining balance
+                decimal excessAmount = payment.Amount - remainingLoanAmount;
+
+                loan.AmountPaid = loan.Principal; // Mark the loan as fully paid
+                loan.Status = "Paid";
+                borrowerAccount.AccountBalance += (int)excessAmount ;
+                // Calculate the amount to increase (50% of the initial value)
+                int initialEligibleLoanAmt = borrowerAccount.EligibleLoanAmt; // Assuming this is an integer
+                int amountToIncrease = (int)(initialEligibleLoanAmt * 0.50m);
+                borrowerAccount.EligibleLoanAmt += amountToIncrease;
+
+                _DbContext.Loans.Update(loan);
+                _DbContext.Accounts.Update(borrowerAccount);
+                _DbContext.SaveChanges();
+
+                string message = excessAmount > 0
+                    ? $"Loan payment successful. Excess amount of {excessAmount:C} has been credited back to your account."
+                    : "Loan payment successful.";
+
+                return Ok(new { Message = message, loan });
+            }
         }
 
 

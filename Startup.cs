@@ -55,16 +55,17 @@ namespace ASHMONEY_API
                 {
                     Title = "ASHMONEY API",
                     Version = "v1",
-                    Description = "Digital Finance Solution",
-                    Contact = new Microsoft.OpenApi.Models.OpenApiContact
-                    {
-                        Name = "Pius Ashogbon",
-                        Email = "infopiusash@gmail.com",
-                        Url = new System.Uri("https://www.linkedin.com/in/piusash/")
-                       
+                    Description = @"Digital Finance Solution built with C# ASP.NET Web API and SQL database. Designed to facilitate easy integration, especially for frontend developers interested in exploring fintech. Perfect for beginners and intermediate developers looking to start testing and building fintech applications.
 
-                    }
+**Developed by:** Pius Ashogbon  
+**Email:** [infopiusash@gmail.com](mailto:infopiusash@gmail.com)  
+**LinkedIn:** [Pius Ashogbon](https://www.linkedin.com/in/piusash/)
+",
+                    Contact = new Microsoft.OpenApi.Models.OpenApiContact()
                 });
+
+
+
             });
         }
 

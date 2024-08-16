@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ASHMONEY_API.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,7 +15,7 @@ namespace ASHMONEY_API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FullName = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
-                    PhoneNumber = table.Column<int>(nullable: false),
+                    PhoneNumber = table.Column<string>(nullable: true),
                     Country = table.Column<string>(nullable: true),
                     State = table.Column<string>(nullable: true),
                     Address = table.Column<string>(nullable: true),
@@ -31,7 +31,9 @@ namespace ASHMONEY_API.Migrations
                     LastUpdated = table.Column<DateTime>(nullable: false),
                     LastLoggedIn = table.Column<DateTime>(nullable: false),
                     Role = table.Column<string>(nullable: true),
-                    Token = table.Column<string>(nullable: true)
+                    Token = table.Column<string>(nullable: true),
+                    Status = table.Column<string>(nullable: true),
+                    EligibleLoanAmt = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -53,7 +55,9 @@ namespace ASHMONEY_API.Migrations
                     RepaymentDate = table.Column<DateTime>(nullable: false),
                     BorrowerName = table.Column<string>(nullable: true),
                     BorrowerAccount = table.Column<int>(nullable: false),
-                    Purpose = table.Column<string>(nullable: true)
+                    Purpose = table.Column<string>(nullable: true),
+                    AmountPaid = table.Column<decimal>(nullable: false),
+                    Status = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
